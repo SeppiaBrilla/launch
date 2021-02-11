@@ -2,6 +2,17 @@
 import sys
 import os
 
+master_file = ".launch"
+current_dir = os.getcwd()
+
+def file_cicler(function, file, args):
+    with open(file, "r") as f:
+        lines = f.readlines()
+        with open(file, "w") as f:
+            for line in lines:
+                function(line, f, args)
+    return 
+
 
 def find_file(file_name):
     for file in os.listdir('./'):
@@ -10,9 +21,9 @@ def find_file(file_name):
     return False
 
 def find_option_in_file(option_name):
-    if not find_file(".launch"):
+    if not find_file(master_file):
         return False
-    f = open(".launch", "r")
+    f = open(current_dir + "/" + master_file, "r")
     for line in f:
         if option_name == line.split()[0]:
             return True
@@ -28,7 +39,7 @@ def option(args):
         read(args[1])
 
 def settings(args):
-    if not find_file(".launch") and args[1]!= "-help" and args[1]!= "-new":
+    if not find_file(master_file) and args[1]!= "-help" and args[1]!= "-new":
         print(".launch file not found, please create one whit the -new option or use the -help option if you want help")
         return
     if not args[1] in allSettings:
@@ -40,11 +51,11 @@ def settings(args):
 def new(args):
     if len(args) < 5:
         return 1
-    if find_file(".launch"):
+    if find_file(master_file):
         if find_option_in_file(args[2]):
             print("there's already an option with this name, abort")
             return
-        f = open(".launch","a")
+        f = open(current_dir + "/" + master_file,"a")
         f.write(args[2]+" "+args[3]+" "+args[4] + "\n")
         f.close()
     else:
@@ -54,69 +65,68 @@ def new(args):
         if find_file(".gitignore"):
             if prompt("do you want me to update your gitignore?"):
                 git = open(".gitignore","a")
-                git.write(".launch")
+                git.write(master_file)
                 git.close()
-        f = open(".launch","w")
+        f = open(current_dir + "/" + master_file,"w")
         f.write(args[2]+" "+args[3]+" "+args[4] + " --default\n")
         f.close()
     return 0
 
 def remove(args):
+    def to_call(line, f, args):
+        if "--default" == line.split()[len(line.split()) - 1] and line.split()[0] == args[2]:
+            if not prompt("You are deleting the defaut option, are you sure?"):
+                f.write(line)
+        elif line.split()[0] != args[2]:
+            f.write(line)
+
     if len(args) < 3:
         return 1
-    with open(".launch", "r") as f:
-        lines = f.readlines()
-        with open(".launch", "w") as f:
-            for line in lines:
-                if "--default" == line.split()[len(line.split()) - 1] and line.split()[0] == args[2]:
-                    if not prompt("You are deleting the defaut option, are you sure?"):
-                        f.write(line)
-                elif line.split()[0] != args[2]:
-                    f.write(line)
+
+    file_cicler(to_call, current_dir + "/" + master_file, args)
 
 def rename(args):
+    def to_call(line, f, args):
+        if line.split()[0] != args[2]:
+            f.write(line)
+        else:
+            new_line = line.split()
+            new_line[0] = args[3]
+            new_line = ' '.join(new_line)
+            if prompt("    do you want to change line :\n" + line + "\n   to:\n" + new_line + "\n   ?"):
+                f.write(new_line + "\n")
+            else:
+                f.write(line)
+
     if len(args) < 4:
         return 1
     if find_option_in_file(args[3]):
         print("there's already an option with this name, abort")
         return
-    with open(".launch", "r") as f:
-        lines = f.readlines()
-        with open(".launch", "w") as f:
-            for line in lines:
-                if line.split()[0] != args[2]:
-                    f.write(line)
-                else:
-                    new_line = line.split()
-                    new_line[0] = args[3]
-                    new_line = ' '.join(new_line)
-                    if prompt("    do you want to change line :\n" + line + "\n   to:\n" + new_line + "\n   ?"):
-                        f.write(new_line + "\n")
-                    else:
-                        f.write(line)
+    file_cicler(to_call, current_dir + "/" + master_file, args)
                     
 
 def mkdflt(args):
+    def to_call(line, f, args):
+        if line.split()[0] != args[2] and line.split()[len(line.split()) - 1] != "--default":
+            f.write(line)
+        elif line.split()[0] != args[2] and line.split()[len(line.split()) - 1] == "--default":
+            if prompt("the option: " +line.split()[0] + " will not be the default one anymore, are you sure?"):
+                line = line.split()
+                line[len(line) - 1] = ""
+                f.write(" ".join(line) + "\n")
+            else:
+                print("abort")
+        elif line.split()[0] == args[2] and line.split()[len(line.split()) - 1] == "--default":
+                print("already the defaut option")
+        else:
+            line = line[:-1] + " --default\n"
+            f.write(line)
+    
     if len(args) < 3:
         return 1
-    with open(".launch", "r") as f:
-        lines = f.readlines()
-        with open(".launch", "w") as f:
-            for line in lines:
-                if line.split()[0] != args[2] and line.split()[len(line.split()) - 1] != "--default":
-                    f.write(line)
-                elif line.split()[0] != args[2] and line.split()[len(line.split()) - 1] == "--default":
-                    if prompt("the option: " +line.split()[0] + " will not be the default one anymore, are you sure?"):
-                        line = line.split()
-                        line[len(line) - 1] = ""
-                        f.write(" ".join(line) + "\n")
-                    else:
-                        print("abort")
-                elif line.split()[0] == args[2] and line.split()[len(line.split()) - 1] == "--default":
-                        print("already the defaut option")
-                else:
-                    line = line[:-1] + " --default\n"
-                    f.write(line)
+
+    file_cicler(to_call, current_dir + "/" + master_file, args)
     return 0
 
 def help(args):
@@ -140,10 +150,10 @@ def help(args):
     print("-------------------------------------------------------------------------------------------------------------------------------------------------")
 
 def read(called):
-    if not find_file(".launch"):
+    if not find_file(master_file):
         print(".launch file not found, please create whit the -new option one or use the -help option if you want help")
         return
-    f = open(".launch", "r")
+    f = open(current_dir + master_file, "r")
     for line in f:
         splitted = line.split()
         if called == splitted[0] or (called == splitted[len(splitted) - 1] and called == "--default"):
