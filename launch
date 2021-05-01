@@ -123,8 +123,6 @@ def new_list(default):
         new_file.write(new_line)
     new_file.close()
 
-
-
 def remove(args):
     def to_call(line, f, args):
         if "--default" == line.split()[len(line.split()) - 1] and line.split()[0] == args[0]:
@@ -158,7 +156,6 @@ def rename(args):
         return
     file_cicler(to_call, master_file, args)
                     
-
 def mkdflt(args):
     def to_call(line, f, args):
         if line.split()[0] != args[0] and line.split()[len(line.split()) - 1] != "--default":
@@ -185,7 +182,8 @@ def mkdflt(args):
 def erase(args):
     if find_file(current_dir, directory_name):
         try:
-            shutil.rmtree(directory)
+            if prompt("are you sure"):
+                shutil.rmtree(directory)
         except:
             print("an error occurred")
 
@@ -245,5 +243,7 @@ def main():
 allSettings = {"-new": new, "-remove":remove, "-rename": rename, "-mkdflt": mkdflt, "-erase":erase, "-help": help}
 
 if __name__=="__main__":
-    main()
-
+    try:
+        main()
+    except:
+        pass
