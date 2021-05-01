@@ -47,7 +47,7 @@ def option(args):
 
 def settings(args):
     if not find_file(current_dir, directory_name) and args[0]!= "-help" and args[0]!= "-new":
-        print(".launch file not found, please create one whit the -new option or use the -help option if you want help")
+        print(".launch directory not found, please create one whit the -new option or use the -help option if you want help")
         return
     if not args[0] in allSettings:
         print("option not found, please use the -help option if you want help")
@@ -69,7 +69,7 @@ def new(args):
         f.write(args[0]+" "+args[1]+" "+args[2] + "\n")
         f.close()
     else:
-        if not prompt("I've not found a .launch file, do you want me to create one?"):
+        if not prompt("I've not found a .launch directory, do you want me to create one?"):
             print("abort")
             return 0
         if find_file(current_dir,".gitignore"):
@@ -195,9 +195,9 @@ def help(args):
     print("you can just call launch without arguments, it will just call the default option")
     print("you can call launch <option name> to call a specific option")
     print("-------------------------------------------------------------------------------------------------------------------------------------------------")
-    print("use -new add an option to your .lauch file (you can also -new to create a new -launch file if not present in folder)")
+    print("use -new add an option to your .lauch directory (you can also -new to create a new -launch directory if not present in folder)")
     print("    usage 1: -new <new option name> <program to call> <file argument of the program>")
-    print("    usage 2: -new -list to create a macro that opens multiple files")
+    print("    usage 2: -new -list to create a macro that opens multiple programs")
     print("you can also call the program with a set of arguments or none. To have a set of arguments just list them all separated by a '"+ separator +"', if you don't want to have arguments just write '"+ separator +"'")
     print("-------------------------------------------------------------------------------------------------------------------------------------------------")
     print("use -remove to remove an already existing option")
@@ -215,7 +215,7 @@ def help(args):
 
 def read(called):
     if not find_file(current_dir, directory_name):
-        print(".launch file not found, please create whit the -new option one or use the -help option if you want help")
+        print(".launch directory not found, please create whit the -new option one or use the -help option if you want help")
         return
     f = open(master_file, "r")
     for line in f:
